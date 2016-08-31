@@ -1,35 +1,36 @@
-export default class LogEntry {
+export default class LogEntry implements CullingParser.ILogEntry {
 
   public date: Date | null;
   public moduleName: string;
 
-  public damageDealt: number;
-  public damageReceived: number;
-  public damageRange: number;
-  public isRanged: boolean;
+  public interesting: boolean;
+
   public isRoundStart: boolean;
   public isRoundEnd: boolean;
   public isWin: boolean;
   public isLoss: boolean;
+  public score: number;
   public otherPlayer: string;
+  public damage: CullingParser.IDamageInstance;
   public isKill: boolean;
   public isDeath: boolean;
   public isAFK: boolean;
-  public score: number;
-
-  public interesting: boolean;
 
   constructor(private fullLine: string) {
-    this.damageDealt = 0;
-    this.damageReceived = 0;
-    this.damageRange = 0;
-    this.isRanged = false;
+    this.damage = {
+      dealt: 0,
+      received: 0,
+      range: 0,
+      isRanged: false,
+      isAFK: false
+    };
+    this.isRoundStart = false;
+    this.isRoundEnd = false;
     this.isWin = false;
     this.isLoss = false;
     this.otherPlayer = '';
     this.isKill = false;
     this.isDeath = false;
-    this.isAFK = false;
     this.score = 0;
 
     this.interesting = false;
@@ -39,7 +40,6 @@ export default class LogEntry {
   }
 
   parse() {
-
     this.parseDamage();
     this.parseRankScoring();
   }
@@ -97,16 +97,16 @@ export default class LogEntry {
     this.otherPlayer = values[1];
     const damage = parseInt(values[2], 10);
     if (isHit) {
-      this.damageDealt = damage;
+      this.damage.dealt = damage;
     } else {
-      this.damageReceived = damage;
+      this.damage.received = damage;
     }
-    this.damageRange = parseInt(values[3], 10);
-    if (this.damageRange > 3) { // value based on scientific studies using the well know method of "guessing"
-      this.isRanged = true;
-      if (this.damageRange > 300) {
+    this.damage.range = parseInt(values[3], 10);
+    if (this.damage.range > 3) { // value based on scientific studies using the well know method of "guessing"
+      this.damage.isRanged = true;
+      if (this.damage.range > 300) {
         // realistically most of the time you do damage over 300m away, it is with traps or alarm guns
-        this.isAFK = true;
+        this.damage.isAFK = true;
       }
     }
   }

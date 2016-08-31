@@ -5,7 +5,7 @@ import parseLog from './lib';
 parseLog(fs.createReadStream('testlog.txt'))
   .then(
     (result) => {
-      console.log('result', result);
+      console.log('result', result.summary.damage);
       /*console.log(`Parsed log. Filtered out ${result.totalLines - entries.length} lines. Used lines: ${entries.length}`);
       console.log(`Damge: dealt ${damageDone}; received ${damageReceived}`);
       console.log(`Killed ${kills} players. Died ${deaths} times.`);
