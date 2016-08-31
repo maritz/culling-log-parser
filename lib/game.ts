@@ -31,6 +31,7 @@ export default class Game {
     this.isWin = false;
     this.isFinished = false;
     this.deathWaitingForDamage = false;
+    // TODO: teamgame detection based on win/loss score === 0?
   }
 
   addEntry(entry: LogEntry) {
@@ -86,7 +87,24 @@ export default class Game {
   }
 
   getResult(): CullingParser.IGame {
-    return <any>{};
+    const playerNames = Object.keys(this.players);
+    const playerObject: {
+      [name: string]: CullingParser.IDamageSummary
+    } = {};
+
+    for (const name of playerNames) {
+      playerObject[name] = this.players[name].getSummary();
+    }
+    return {
+      damageInstances: this.damageInstances,
+      damageSummary: this.damageSummary.getSummary(),
+      end: this.end,
+      isTeamGame: this.isTeamGame,
+      isWin: this.isWin,
+      players: playerObject,
+      score: this.score,
+      start: this.start
+    };
   }
 
 }
