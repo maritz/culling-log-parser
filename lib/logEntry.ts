@@ -9,6 +9,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
   public isRoundEnd: boolean;
   public isWin: boolean;
   public isLoss: boolean;
+  public isGoingBackToMainMenu: boolean;
   public score: number;
   public otherPlayer: string;
   public damage: CullingParser.IDamageInstance;
@@ -18,6 +19,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
 
   constructor(private fullLine: string) {
     this.damage = {
+      timestamp: 0,
       dealt: 0,
       received: 0,
       range: 0,
@@ -28,6 +30,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
     this.isRoundEnd = false;
     this.isWin = false;
     this.isLoss = false;
+    this.isGoingBackToMainMenu = false;
     this.otherPlayer = '';
     this.isKill = false;
     this.isDeath = false;
@@ -42,6 +45,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
   parse() {
     this.parseDamage();
     this.parseRankScoring();
+    this.parseGoingBackToMainMenu();
   }
 
   /**
@@ -95,6 +99,9 @@ export default class LogEntry implements CullingParser.ILogEntry {
     }
     this.interesting = true;
     this.otherPlayer = values[1];
+    if (this.date) {
+      this.damage.timestamp = this.date.getTime();
+    }
     const damage = parseInt(values[2], 10);
     if (isHit) {
       this.damage.dealt = damage;
@@ -116,9 +123,10 @@ export default class LogEntry implements CullingParser.ILogEntry {
       return;
     }
     const str = this.fullLine.substr(49);
-    const match = str.match(/RankScoring (win|loss|kill|death): [\d]/i);
+    const match = str.match(/RankScoring (win|loss|kill|death): (-?[\d])/i);
     if (match) {
       this.interesting = true;
+      this.score = parseInt(match[2], 10);
       switch (match[1]) {
         case 'win':
           this.isWin = true;
@@ -135,6 +143,16 @@ export default class LogEntry implements CullingParser.ILogEntry {
         default:
           console.error('Found unknown RankScoring value:' + str);
       }
+    }
+  }
+
+  parseGoingBackToMainMenu() {
+    if (this.moduleName !== 'LogOnline') {
+      return;
+    }
+    const str = this.fullLine.substr(41);
+    if (str === 'GotoState: NewState: MainMenu') {
+      this.isGoingBackToMainMenu = true;
     }
   }
 

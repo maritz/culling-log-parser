@@ -4,6 +4,7 @@ import * as isStream from 'is-stream';
 
 import DamageSummary from './damageSummary';
 import LogEntry from './logEntry';
+import Game from './game';
 
 
 export default function parseLog(input: any): Promise<CullingParser.parseLogResponse> {
@@ -27,13 +28,15 @@ export default function parseLog(input: any): Promise<CullingParser.parseLogResp
         damage: <CullingParser.IDamageSummary>{}
       }
     };
-    const damageSummary = new DamageSummary()
+    const damageSummary = new DamageSummary();
+    let currentGame = new Game();
 
     let inputStream = input;
     if (! isStream.readable(inputStream)) {
       inputStream = streamify.createReadStream(input);
     }
     const byLine = readline.createInterface({ input: inputStream });
+
 
     byLine
       .on('line', (line: string) => {
@@ -66,10 +69,20 @@ export default function parseLog(input: any): Promise<CullingParser.parseLogResp
 
         // damage
         damageSummary.add(entry.damage);
+        currentGame.addEntry(entry);
+        if (currentGame.isFinished) {
+          response.games.push(currentGame);
+          currentGame = new Game();
+        }
 
         response.entries.push(entry);
       })
       .on('close', () => {
+        if (currentGame.start && !currentGame.isFinished) {
+          // last game didn't finish according to logs. crashed?
+          currentGame.finish(response.entries[response.entries.length - 1]);
+          response.games.push(currentGame);
+        }
         response.summary.damage = damageSummary.getSummary();
         resolve(response);
       });

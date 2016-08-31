@@ -23,9 +23,18 @@ declare namespace CullingParser {
     end: Date | null;
 
     isWin: boolean;
+    isTeamGame: boolean;
     score: number;
 
-    players: Array<IDamageInstance>;
+    players: {
+      [name: string]: IDamageSummary
+    };
+
+    damageInstances: Array<{
+      name: string
+    } & IDamageInstance>,
+
+    damageSummary: IDamageSummary;
   }
 
   interface IDamageInstance {
@@ -34,6 +43,7 @@ declare namespace CullingParser {
     range: number,
     isRanged: boolean,
     isAFK: boolean,
+    timestamp: number
   }
 
   interface IDamageSummaryDamage {
