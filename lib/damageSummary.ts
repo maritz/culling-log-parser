@@ -30,7 +30,7 @@ class DamageSubSummary implements CullingParser.IDamageSummaryDamage {
 
 export default class DamageSummary {
 
-  public summaries: {
+  private summaries: {
       melee: {
         dealt: DamageSubSummary,
         received: DamageSubSummary

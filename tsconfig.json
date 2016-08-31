@@ -2,12 +2,13 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
+    "outDir": "dist",
+    "declaration": true,
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
-    "noEmit": true,
     "lib": [
       "es2015"
     ]
