@@ -1,0 +1,12 @@
+{
+  "name": "culling-log-parser",
+  "version": "1.0.0",
+  "description": "Parses log files of the culling and puts them into easier to consume formats",
+  "keywords": "culling theculling logparser",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Moritz Peters",
+  "license": "MIT"
+}
