@@ -123,7 +123,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
       return;
     }
     const str = this.fullLine.substr(49);
-    const match = str.match(/RankScoring (win|loss|kill|death): (-?[\d])/i);
+    const match = str.match(/RankScoring (win|loss|kill|death): (-?[\d]+)/i);
     if (match) {
       this.interesting = true;
       this.score = parseInt(match[2], 10);

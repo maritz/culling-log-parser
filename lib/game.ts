@@ -15,7 +15,6 @@ export default class Game {
 
   public damageSummary: DamageSummary;
 
-  public isTeamGame: boolean;
   public isWin: boolean;
   public score: number;
   public isFinished: boolean;
@@ -31,7 +30,6 @@ export default class Game {
     this.isWin = false;
     this.isFinished = false;
     this.deathWaitingForDamage = false;
-    // TODO: teamgame detection based on win/loss score === 0?
   }
 
   addEntry(entry: LogEntry) {
@@ -83,6 +81,9 @@ export default class Game {
     if (entry.date) {
       this.end = entry.date;
     }
+    if (!isNaN(entry.score)) {
+      this.score = entry.score;
+    }
     this.isFinished = true;
   }
 
@@ -99,7 +100,6 @@ export default class Game {
       damageInstances: this.damageInstances,
       damageSummary: this.damageSummary.getSummary(),
       end: this.end,
-      isTeamGame: this.isTeamGame,
       isWin: this.isWin,
       players: playerObject,
       score: this.score,

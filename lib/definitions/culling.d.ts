@@ -23,7 +23,6 @@ declare namespace CullingParser {
     end: Date | null;
 
     isWin: boolean;
-    isTeamGame: boolean;
     score: number;
 
     players: {
