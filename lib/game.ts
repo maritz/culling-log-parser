@@ -19,6 +19,8 @@ export default class Game {
   public score: number;
   public isFinished: boolean;
 
+  public type: CullingParser.GameModesType;
+
   private deathWaitingForDamage: boolean;
 
   constructor() {
@@ -30,13 +32,18 @@ export default class Game {
     this.isWin = false;
     this.isFinished = false;
     this.deathWaitingForDamage = false;
+    this.type = 'custom';
   }
 
-  addEntry(entry: LogEntry) {
-    if (!this.start && entry.date) {
-      this.start = entry.date;
+  public addEntry(entry: LogEntry) {
+    if (entry.isGameStart) {
+      this.start = entry.date || new Date();
     }
     this.addDamage(entry);
+
+    if (entry.gameType.game !== 'custom') {
+      this.type = entry.gameType.game;
+    }
 
     // check finish conditions
     if (this.deathWaitingForDamage && entry.damage.received) {
@@ -48,16 +55,19 @@ export default class Game {
       // when hit by direct damage from a player as the killing blow the damage instance
       // is logged after the death and loss message
       this.deathWaitingForDamage = true;
-    } else if (entry.isGoingBackToMainMenu) {
-      // when hit by indirect damage (gas and possibly others) as the killing blow
-      // there is no last damage instance after death and loss. thus we wait for the
-      // main menu entry
+    } else if (entry.isGameEnd) {
+      // When hit by indirect damage (gas and possibly others) as the killing blow
+      // there is no last damage instance after death and loss. Thus we wait for the
+      // main menu entry.
+      // The reason we can't just always wait for isGameEnd is that crashlogs would not have
+      // an end entry and so could introduce problems.
+      // Also this way of doing it allows for a better estimate on actual gameplay time.
       this.finish(entry);
     }
   }
 
   private addDamage(entry: LogEntry) {
-    if (entry.damage.dealt || entry.damage.received) {
+    if (entry.damage.dealt || entry.damage.received || entry.damage.isBlocked) {
       this.damageSummary.add(entry.damage);
 
 
@@ -69,7 +79,7 @@ export default class Game {
       this.damageInstances.push(
         Object.assign<{ name: string }, CullingParser.IDamageInstance>(
           {
-            name: entry.otherPlayer
+            name: entry.otherPlayer,
           },
           entry.damage
         )
@@ -77,7 +87,7 @@ export default class Game {
     }
   }
 
-  finish(entry: LogEntry) {
+  public finish(entry: LogEntry) {
     if (entry.date) {
       this.end = entry.date;
     }
@@ -87,7 +97,7 @@ export default class Game {
     this.isFinished = true;
   }
 
-  getResult(): CullingParser.IGame {
+  public getResult(): CullingParser.IGame {
     const playerNames = Object.keys(this.players);
     const playerObject: {
       [name: string]: CullingParser.IDamageSummary
@@ -101,9 +111,10 @@ export default class Game {
       damageSummary: this.damageSummary.getSummary(),
       end: this.end,
       isWin: this.isWin,
+      mode: this.type,
       players: playerObject,
       score: this.score,
-      start: this.start
+      start: this.start,
     };
   }
 

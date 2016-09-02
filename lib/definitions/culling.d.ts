@@ -1,13 +1,19 @@
 declare namespace CullingParser {
 
+  interface ILogParserOptions {
+    ignoreBots: boolean;
+  }
+
+  type GameModesType = 'solo' | 'team' | 'custom' | 'lightning' | 'trials';
+
   interface ILogEntry {
     date: Date | null;
     moduleName: string;
 
     interesting: boolean;
 
-    isRoundStart: boolean;
-    isRoundEnd: boolean;
+    isGameStart: boolean;
+    isGameEnd: boolean;
     isWin: boolean;
     isLoss: boolean;
     score: number;
@@ -16,6 +22,16 @@ declare namespace CullingParser {
     isKill: boolean;
     isDeath: boolean;
     isAFK: boolean;
+
+    version: {
+      game: string;
+      api: number;
+    }
+
+    gameType: {
+      game: string;
+      level: string;
+    }
   }
 
   interface IGame {
@@ -34,6 +50,7 @@ declare namespace CullingParser {
     } & IDamageInstance>,
 
     damageSummary: IDamageSummary;
+    mode: GameModesType;
   }
 
   interface IDamageInstance {
@@ -41,19 +58,27 @@ declare namespace CullingParser {
     received: number,
     range: number,
     isRanged: boolean,
+    isHeadshot: boolean,
     isAFK: boolean,
-    timestamp: number
+    timestamp: number,
+    isBackstab: boolean,
+    isBlocked: boolean,
+    block: number,
   }
 
   interface IDamageSummaryDamage {
     amount: number,
     count: number,
     averageRange: number,
+    backstabCount: number,
+    meleeBlockCount: number,
+    rangeBlockCount: number,
+    headshotCount: number,
   }
 
   interface IDamageSummaryDealtAndReceived {
     dealt: IDamageSummaryDamage,
-    received: IDamageSummaryDamage
+    received: IDamageSummaryDamage,
   }
 
   interface IDamageSummary {
@@ -69,17 +94,20 @@ declare namespace CullingParser {
     meta: {
       lines: {
         total: number,
-        relevant: number
+        relevant: number,
       }
     },
     entries: Array<ILogEntry>,
     games: Array<IGame>,
+    players: {
+      [name: string]: IDamageSummary
+    }
     summary: {
       wins: number,
       losses: number,
       kills: number,
       deaths: number,
-      damage: IDamageSummary
+      damage: IDamageSummary,
     }
   }
 
