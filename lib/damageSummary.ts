@@ -1,4 +1,6 @@
-class DamageSubSummary implements CullingParser.IDamageSummaryDamage {
+import * as ICullingParser from './definitions/culling';
+
+class DamageSubSummary implements ICullingParser.IDamageSummaryDamage {
 
   public amount: number;
   public count: number;
@@ -21,7 +23,7 @@ class DamageSubSummary implements CullingParser.IDamageSummaryDamage {
     this.rangeBlockAmount = 0;
   }
 
-  public addDamage(damage = 0, instance: CullingParser.IDamageInstance) {
+  public addDamage(damage = 0, instance: ICullingParser.IDamageInstance) {
     if (!instance.isBlocked) {
       this.count++;
       this.amount += damage;
@@ -95,7 +97,7 @@ export default class DamageSummary {
     };
   }
 
-  public add(instance: CullingParser.IDamageInstance) {
+  public add(instance: ICullingParser.IDamageInstance) {
     let obj = this.summaries.melee;
     if (instance.isRanged) {
       if (instance.isAFK) {
@@ -114,14 +116,34 @@ export default class DamageSummary {
     subSUmmary.addDamage(damage, instance);
   }
 
-  public getSummary(): CullingParser.IDamageSummary {
+  public addOtherSummary(other: DamageSummary): DamageSummary {
+    const result = new DamageSummary();
+    // TODO: refactor this EleGiggle
+    result.summaries = {
+      afk: {
+        dealt: this.summaries.afk.dealt.addOtherSubSummary(other.summaries.afk.dealt),
+        received: this.summaries.afk.received.addOtherSubSummary(other.summaries.afk.received),
+      },
+      melee: {
+        dealt: this.summaries.melee.dealt.addOtherSubSummary(other.summaries.melee.dealt),
+        received: this.summaries.melee.received.addOtherSubSummary(other.summaries.melee.received),
+      },
+      ranged: {
+        dealt: this.summaries.ranged.dealt.addOtherSubSummary(other.summaries.ranged.dealt),
+        received: this.summaries.ranged.received.addOtherSubSummary(other.summaries.ranged.received),
+      },
+    };
+    return result;
+  }
+
+  public getSummary(): ICullingParser.IDamageSummary {
     type averageRangeObject = {
       averageRange: number
     };
     type summariesObject = {
-      melee: CullingParser.IDamageSummaryDealtAndReceived,
-      ranged: CullingParser.IDamageSummaryDealtAndReceived,
-      afk: CullingParser.IDamageSummaryDealtAndReceived
+      melee: ICullingParser.IDamageSummaryDealtAndReceived,
+      ranged: ICullingParser.IDamageSummaryDealtAndReceived,
+      afk: ICullingParser.IDamageSummaryDealtAndReceived
     };
 
     let totalDealt = this.summaries.melee.dealt.addOtherSubSummary(this.summaries.ranged.dealt);
@@ -134,7 +156,7 @@ export default class DamageSummary {
     const sum = totalDealt.rangeSum + totalReceived.rangeSum;
 
 
-    const response = Object.assign<summariesObject, averageRangeObject, CullingParser.IDamageSummaryDealtAndReceived>(
+    const response = Object.assign<summariesObject, averageRangeObject, ICullingParser.IDamageSummaryDealtAndReceived>(
       this.summaries,
       {
         averageRange: sum / count,

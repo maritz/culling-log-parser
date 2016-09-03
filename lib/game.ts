@@ -1,5 +1,6 @@
 import DamageSummary from './damageSummary';
 import LogEntry from './logEntry';
+import * as ICullingParser from './definitions/culling';
 
 export default class Game {
 
@@ -11,7 +12,7 @@ export default class Game {
   };
   public damageInstances: Array<{
     name: string
-  } & CullingParser.IDamageInstance>;
+  } & ICullingParser.IDamageInstance>;
 
   public damageSummary: DamageSummary;
 
@@ -19,7 +20,7 @@ export default class Game {
   public score: number;
   public isFinished: boolean;
 
-  public type: CullingParser.GameModesType;
+  public type: ICullingParser.GameModesType;
 
   private deathWaitingForDamage: boolean;
 
@@ -77,7 +78,7 @@ export default class Game {
       this.players[entry.otherPlayer].add(entry.damage);
 
       this.damageInstances.push(
-        Object.assign<{ name: string }, CullingParser.IDamageInstance>(
+        Object.assign<{ name: string }, ICullingParser.IDamageInstance>(
           {
             name: entry.otherPlayer,
           },
@@ -97,10 +98,10 @@ export default class Game {
     this.isFinished = true;
   }
 
-  public getResult(): CullingParser.IGame {
+  public getResult(): ICullingParser.IGame {
     const playerNames = Object.keys(this.players);
     const playerObject: {
-      [name: string]: CullingParser.IDamageSummary
+      [name: string]: ICullingParser.IDamageSummary
     } = {};
 
     for (const name of playerNames) {

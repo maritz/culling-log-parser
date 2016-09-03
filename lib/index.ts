@@ -1,36 +1,39 @@
 import DamageSummary from './damageSummary';
 import LogEntry from './logEntry';
 import Game from './game';
+import * as ICullingParser from './definitions/culling';
 
 const verifiedApiVersions: Array<number> = [];
 
+
 export default function parseLog(
   input: string,
-  options: CullingParser.ILogParserOptions = {
+  options: ICullingParser.IParseLogOptions = {
     ignoreBots: false,
   }
-): CullingParser.parseLogResponse {
+): ICullingParser.IParseLogOutput {
 
   const modules: Array<string> = [];
-  const response = {
+  const output: ICullingParser.IParseLogOutput = {
+    end: new Date(),
     entries: <Array<LogEntry>> [],
-    games: <Array<CullingParser.IGame>> [],
+    games: <Array<ICullingParser.IGame>> [],
     meta: {
       lines: {
         relevant: 0,
         total: 0,
       },
     },
-    players: <{ [name: string]: CullingParser.IDamageSummary }> {},
+    players: <{ [name: string]: DamageSummary }> {},
+    start: new Date(),
     summary: {
-      damage: <CullingParser.IDamageSummary> {},
+      damage: <DamageSummary> {},
       deaths: 0,
       kills: 0,
       losses: 0,
       wins: 0,
     },
   };
-  const damageSummary = new DamageSummary();
   const playerSummary: { [name: string]: DamageSummary } = {};
   let currentGame: Game = new Game();
 
@@ -38,7 +41,7 @@ export default function parseLog(
 
   const lines = input.split('\n');
   lines.forEach((line, lineno) => {
-    response.meta.lines.total++;
+    output.meta.lines.total++;
     const entry = new LogEntry(line);
 
     if (modules.indexOf(entry.moduleName) === -1) {
@@ -49,7 +52,7 @@ export default function parseLog(
     if (!entry.interesting) {
       return;
     } else {
-      response.meta.lines.relevant++;
+      output.meta.lines.relevant++;
     }
 
     if (entry.version.api !== 0) {
@@ -69,16 +72,16 @@ export default function parseLog(
     }
 
     if (entry.isKill) {
-      response.summary.kills++;
+      output.summary.kills++;
     }
     if (entry.isDeath) {
-      response.summary.deaths++;
+      output.summary.deaths++;
     }
     if (entry.isWin) {
-      response.summary.wins++;
+      output.summary.wins++;
     }
     if (entry.isLoss) {
-      response.summary.losses++;
+      output.summary.losses++;
     }
 
     if (entry.damage.isBlocked && entry.damage.isBackstab) {
@@ -91,10 +94,10 @@ export default function parseLog(
       console.info('culling-log-parser: Someone blocked a damage instance from stupid range. Rare but can happen.');
     }
 
-    damageSummary.add(entry.damage);
+    output.summary.damage.add(entry.damage);
     currentGame.addEntry(entry);
     if (currentGame.isFinished) {
-      response.games.push(currentGame.getResult());
+      output.games.push(currentGame.getResult());
       currentGame = new Game();
     }
     if (!playerSummary[entry.otherPlayer]) {
@@ -102,18 +105,17 @@ export default function parseLog(
     }
     playerSummary[entry.otherPlayer].add(entry.damage);
 
-    response.entries.push(entry);
+    output.entries.push(entry);
   });
 
   if (currentGame.start && !currentGame.isFinished) {
     // last game didn't finish according to logs. crashed?
-    currentGame.finish(response.entries[response.entries.length - 1]);
-    response.games.push(currentGame.getResult());
+    currentGame.finish(output.entries[output.entries.length - 1]);
+    output.games.push(currentGame.getResult());
   }
   Object.keys(playerSummary).forEach((name) => {
-    response.players[name] = playerSummary[name].getSummary();
+    output.players[name] = playerSummary[name];
   });
-  response.summary.damage = damageSummary.getSummary();
-  return response;
 
+  return output;
 }

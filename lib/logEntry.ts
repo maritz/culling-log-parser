@@ -1,4 +1,5 @@
-const knownGameModeMap: {[key: string]: CullingParser.GameModesType} = {
+import * as ICullingParser from './definitions/culling';
+const knownGameModeMap: { [key: string]: ICullingParser.GameModesType } = {
   'VictoryGameMode_Solo.VictoryGameMode_Solo_C': 'solo',
   'VictoryGameMode.VictoryGameMode_C': 'team', // Team games
   'VictoryGameMode_Lightning.VictoryGameMode_Lightning_C': 'lightning',
@@ -7,7 +8,7 @@ const knownGameModeMap: {[key: string]: CullingParser.GameModesType} = {
 };
 
 
-export default class LogEntry implements CullingParser.ILogEntry {
+export default class LogEntry implements ICullingParser.ILogEntry {
 
   public date: Date | null;
   public moduleName: string;
@@ -20,7 +21,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
   public isLoss: boolean;
   public score: number;
   public otherPlayer: string;
-  public damage: CullingParser.IDamageInstance;
+  public damage: ICullingParser.IDamageInstance;
   public isKill: boolean;
   public isDeath: boolean;
   public isAFK: boolean;
@@ -29,7 +30,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
     api: number;
   };
   public gameType: {
-    game: CullingParser.GameModesType;
+    game: ICullingParser.GameModesType;
     level: string;
   };
 
@@ -71,7 +72,7 @@ export default class LogEntry implements CullingParser.ILogEntry {
     this.moduleName = this.parseModuleName();
   }
 
-  public parse(options: CullingParser.ILogParserOptions) {
+  public parse(options: any) {
     this.parseVersion();
     this.parseGameState();
     this.parseGameType();
