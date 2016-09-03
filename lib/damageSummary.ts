@@ -156,7 +156,13 @@ export default class DamageSummary {
     const sum = totalDealt.rangeSum + totalReceived.rangeSum;
 
 
-    const response = Object.assign<summariesObject, averageRangeObject, ICullingParser.IDamageSummaryDealtAndReceived>(
+    const response = Object.assign<
+      {},
+      summariesObject,
+      averageRangeObject,
+      ICullingParser.IDamageSummaryDealtAndReceived
+    >(
+      {},
       this.summaries,
       {
         averageRange: sum / count,
