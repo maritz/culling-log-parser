@@ -8,9 +8,11 @@
     "logparser"
   ],
   "main": "dist/index.js",
+  "browser": "dist/index.es5.js",
   "typings": "dist/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "NODE_ENV=production webpack -p"
   },
   "author": "Moritz Peters",
   "license": "MIT",
@@ -18,8 +20,14 @@
     "streamifier": "^0.1.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.14.0",
+    "babel-core": "^6.14.0",
+    "babel-loader": "^6.2.5",
+    "babel-preset-es2015": "^6.14.0",
     "is-stream": "^1.1.0",
+    "ts-loader": "^0.8.2",
     "tslint": "^3.15.1",
-    "typescript": "^2.1.0-dev.20160902"
+    "typescript": "^2.1.0-dev.20160902",
+    "webpack": "^2.1.0-beta.21"
   }
 }
