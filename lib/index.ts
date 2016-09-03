@@ -34,6 +34,7 @@ export default function parseLog(
       wins: 0,
     },
   };
+  const startSet = false;
   const playerSummary: { [name: string]: DamageSummary } = {};
   let currentGame: Game = new Game();
 
@@ -49,6 +50,14 @@ export default function parseLog(
     }
 
     entry.parse(options);
+
+    if (!startSet && entry.date) {
+      output.start = entry.date;
+    }
+    if (entry.date) {
+      output.end = entry.date;
+    }
+
     if (!entry.interesting) {
       return;
     } else {
