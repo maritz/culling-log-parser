@@ -16,25 +16,25 @@ export default function parseLog(
   const modules: Array<string> = [];
   const output: ICullingParser.IParseLogOutput = {
     end: new Date(),
-    entries: <Array<LogEntry>> [],
-    games: <Array<ICullingParser.IGame>> [],
+    entries: [],
+    games: [],
     meta: {
       lines: {
         relevant: 0,
         total: 0,
       },
     },
-    players: <{ [name: string]: DamageSummary }> {},
+    players: {},
     start: new Date(),
     summary: {
-      damage: <DamageSummary> {},
+      damage: new DamageSummary(),
       deaths: 0,
       kills: 0,
       losses: 0,
       wins: 0,
     },
   };
-  const startSet = false;
+  let startSet = false;
   const playerSummary: { [name: string]: DamageSummary } = {};
   let currentGame: Game = new Game();
 
@@ -52,6 +52,7 @@ export default function parseLog(
     entry.parse(options);
 
     if (!startSet && entry.date) {
+      startSet = true;
       output.start = entry.date;
     }
     if (entry.date) {

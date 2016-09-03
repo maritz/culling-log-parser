@@ -7,7 +7,6 @@ const knownGameModeMap: { [key: string]: ICullingParser.GameModesType } = {
   'VictoryGameMode_TrialsSolo.VictoryGameMode_TrialsSolo_C': 'trials',
 };
 
-
 export default class LogEntry implements ICullingParser.ILogEntry {
 
   public date: Date | null;
@@ -90,15 +89,14 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     if (!this.fullLine.match(/^\[[\d\.\-:]+]/)) {
       return null;
     }
-    const date = new Date();
-    date.setFullYear(parseInt(this.fullLine.substr(1, 4), 10));
-    date.setMonth(parseInt(this.fullLine.substr(6, 2), 10));
-    date.setDate(parseInt(this.fullLine.substr(9, 2), 10));
-    date.setHours(parseInt(this.fullLine.substr(12, 2), 10));
-    date.setMinutes(parseInt(this.fullLine.substr(15, 2), 10));
-    date.setSeconds(parseInt(this.fullLine.substr(18, 2), 10));
-    date.setMilliseconds(parseInt(this.fullLine.substr(21, 3), 10));
-    return date;
+    const year = this.fullLine.substr(1, 4);
+    const month = this.fullLine.substr(6, 2);
+    const day = this.fullLine.substr(9, 2);
+    const hours = this.fullLine.substr(12, 2);
+    const minutes = this.fullLine.substr(15, 2);
+    const seconds = this.fullLine.substr(18, 2);
+    const milliseconds = this.fullLine.substr(21, 3);
+    return new Date(`${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}Z`);
   }
 
   private parseModuleName() {
