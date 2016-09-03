@@ -35,7 +35,6 @@ export default function parseLog(
     },
   };
   let startSet = false;
-  const playerData: { [name: string]: ICullingParser.IPlayerDataRaw } = {};
   let currentGame: Game = new Game();
   let currentRegion: ICullingParser.RegionsType = '';
 
@@ -113,16 +112,16 @@ export default function parseLog(
     if (currentGame.isFinished) {
       const finishedGame = currentGame.getResult();
       Object.keys(finishedGame.players).forEach((name) => {
-        if (!playerData[name]) {
-          playerData[name] = {
+        if (!output.players[name]) {
+          output.players[name] = {
             damage: new DamageSummary(),
             died: 0,
             killed: 0,
             timesMet: 0,
           };
         }
-        playerData[name].damage.addOtherSummary(currentGame.players[name]);
-        playerData[name].timesMet++;
+        output.players[name].damage = output.players[name].damage.addOtherSummary(currentGame.players[name]);
+        output.players[name].timesMet++;
       });
       output.games.push(finishedGame);
       currentGame = new Game(currentRegion);
@@ -136,9 +135,6 @@ export default function parseLog(
     currentGame.finish(output.entries[output.entries.length - 1]);
     output.games.push(currentGame.getResult());
   }
-  Object.keys(playerData).forEach((name) => {
-    output.players[name] = playerData[name];
-  });
 
   return output;
 }
