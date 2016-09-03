@@ -32,6 +32,7 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     game: ICullingParser.GameModesType;
     level: string;
   };
+  public region: ICullingParser.RegionsType;
 
   constructor(private fullLine: string) {
     this.damage = {
@@ -54,6 +55,7 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     this.isKill = false;
     this.isDeath = false;
     this.score = 0;
+    this.region = '';
 
     this.version = {
       api: 0,
@@ -73,6 +75,7 @@ export default class LogEntry implements ICullingParser.ILogEntry {
 
   public parse(options: any) {
     this.parseVersion();
+    this.parseRegion();
     this.parseGameState();
     this.parseGameType();
     this.parseDamage(options.ignoreBots);
@@ -125,6 +128,24 @@ export default class LogEntry implements ICullingParser.ILogEntry {
       // LogInit: API Version: 93315
       this.version.api = parseInt(str.substr(13), 10);
       this.interesting = true;
+    }
+  }
+
+  private parseRegion() {
+    // [2016.09.03-12.49.07:119][375]FrontEnd:Display: appid is 437220, using url https://clientweb-eu.theculling.net/api
+    if (this.moduleName !== 'FrontEnd:Display') {
+      return;
+    }
+    const str = this.fullLine.substr(48);
+    const match = str.match(/appid is [\d]+, using url https?:\/\/clientweb-([^\.]+).theculling.net\/api/i);
+    if (match) {
+      this.interesting = true;
+      const region = match[1];
+      if (ICullingParser.isRegionsType(region)) {
+        this.region = region;
+      } else {
+        this.region = 'unknown';
+      }
     }
   }
 

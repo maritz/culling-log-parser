@@ -1,7 +1,13 @@
 import DamageSummary from '../damageSummary';
 import LogEntry from '../logEntry';
 
-export type GameModesType = 'solo' | 'team' | 'custom' | 'lightning' | 'trials';
+export type GameModesType = 'solo' | 'team' | 'custom' | 'lightning' | 'trials' | 'unknown';
+export type RegionsType = 'eu' | 'ocn' | 'us-east' | 'us-west' | 'unknown' | '';
+
+const knownRegions: Array<RegionsType> = ['eu', 'us-east', 'us-west', 'ocn'];
+export function isRegionsType(str: string): str is RegionsType {
+  return knownRegions.indexOf(str as RegionsType) !== -1;
+}
 
 export interface ILogEntry {
   date: Date | null;
@@ -19,6 +25,8 @@ export interface ILogEntry {
   isKill: boolean;
   isDeath: boolean;
   isAFK: boolean;
+
+  region: RegionsType;
 
   version: {
     game: string;
@@ -48,6 +56,7 @@ export interface IGame {
 
   damageSummary: IDamageSummary;
   mode: GameModesType;
+  region: RegionsType;
 }
 
 export interface IDamageInstance {

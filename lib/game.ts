@@ -21,6 +21,7 @@ export default class Game {
   public isFinished: boolean;
 
   public type: ICullingParser.GameModesType;
+  public region: ICullingParser.RegionsType;
 
   private deathWaitingForDamage: boolean;
 
@@ -34,6 +35,7 @@ export default class Game {
     this.isFinished = false;
     this.deathWaitingForDamage = false;
     this.type = 'custom';
+    this.region = '';
   }
 
   public addEntry(entry: LogEntry) {
@@ -44,6 +46,9 @@ export default class Game {
 
     if (entry.gameType.game !== 'custom') {
       this.type = entry.gameType.game;
+    }
+    if (entry.region) {
+      this.region = entry.region;
     }
 
     // check finish conditions
@@ -114,6 +119,7 @@ export default class Game {
       isWin: this.isWin,
       mode: this.type,
       players: playerObject,
+      region: this.region,
       score: this.score,
       start: this.start,
     };
