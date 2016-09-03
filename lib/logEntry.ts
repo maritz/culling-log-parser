@@ -181,9 +181,8 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     this.interesting = true;
     let mode = knownGameModeMap[matches[2]];
     if (!mode) {
-      console.warn('culling-log-parser: WARNING! Found an unknown game mode; setting it to custom',
-        matches[2], this.fullLine);
-      mode = 'custom';
+      console.warn('culling-log-parser: WARNING! Found an unknown game mode.', matches[2], this.fullLine);
+      mode = 'unknown';
     }
     this.gameType = {
       game: mode,
