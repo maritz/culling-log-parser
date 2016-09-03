@@ -15,7 +15,12 @@ export default function makeCloneable(rawResponse: ICullingParser.IParseLogOutpu
     },
   };
   Object.keys(rawResponse.players).forEach((name) => {
-    response.players[name] = rawResponse.players[name].getSummary();
+    response.players[name] = {
+      damage: rawResponse.players[name].damage.getSummary(),
+      died: rawResponse.players[name].died,
+      killed: rawResponse.players[name].killed,
+      timesMet: rawResponse.players[name].timesMet,
+    };
   });
   return response;
 }

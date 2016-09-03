@@ -35,8 +35,9 @@ export default function parseLog(
     },
   };
   let startSet = false;
-  const playerSummary: { [name: string]: DamageSummary } = {};
+  const playerData: { [name: string]: ICullingParser.IPlayerDataRaw } = {};
   let currentGame: Game = new Game();
+  let currentRegion: ICullingParser.RegionsType = '';
 
   let version = 0;
 
@@ -76,9 +77,12 @@ export default function parseLog(
       // rely on api for now.
       return;
     }
-
     if (version === 0 && entry.isGameStart) {
       console.warn('culling-log-parser: WARNING! This log does not appear to have a recognized version line.');
+    }
+
+    if (entry.region) {
+      currentRegion = entry.region;
     }
 
     if (entry.isKill) {
@@ -107,13 +111,22 @@ export default function parseLog(
     output.summary.damage.add(entry.damage);
     currentGame.addEntry(entry);
     if (currentGame.isFinished) {
-      output.games.push(currentGame.getResult());
-      currentGame = new Game();
+      const finishedGame = currentGame.getResult();
+      Object.keys(finishedGame.players).forEach((name) => {
+        if (!playerData[name]) {
+          playerData[name] = {
+            damage: new DamageSummary(),
+            died: 0,
+            killed: 0,
+            timesMet: 0,
+          };
+        }
+        playerData[name].damage.addOtherSummary(currentGame.players[name]);
+        playerData[name].timesMet++;
+      });
+      output.games.push(finishedGame);
+      currentGame = new Game(currentRegion);
     }
-    if (!playerSummary[entry.otherPlayer]) {
-      playerSummary[entry.otherPlayer] = new DamageSummary();
-    }
-    playerSummary[entry.otherPlayer].add(entry.damage);
 
     output.entries.push(entry);
   });
@@ -123,8 +136,8 @@ export default function parseLog(
     currentGame.finish(output.entries[output.entries.length - 1]);
     output.games.push(currentGame.getResult());
   }
-  Object.keys(playerSummary).forEach((name) => {
-    output.players[name] = playerSummary[name];
+  Object.keys(playerData).forEach((name) => {
+    output.players[name] = playerData[name];
   });
 
   return output;

@@ -25,7 +25,7 @@ export default class Game {
 
   private deathWaitingForDamage: boolean;
 
-  constructor() {
+  constructor(region: ICullingParser.RegionsType = '') {
     this.start = null;
     this.end = null;
     this.players = {};
@@ -35,7 +35,7 @@ export default class Game {
     this.isFinished = false;
     this.deathWaitingForDamage = false;
     this.type = 'custom';
-    this.region = '';
+    this.region = region;
   }
 
   public addEntry(entry: LogEntry) {
@@ -106,11 +106,19 @@ export default class Game {
   public getResult(): ICullingParser.IGame {
     const playerNames = Object.keys(this.players);
     const playerObject: {
-      [name: string]: ICullingParser.IDamageSummary
+      [name: string]: {
+        damage: ICullingParser.IDamageSummary;
+        killed: boolean;
+        died: boolean;
+      }
     } = {};
 
     for (const name of playerNames) {
-      playerObject[name] = this.players[name].getSummary();
+      playerObject[name] = {
+        damage: this.players[name].getSummary(),
+        died: false,
+        killed: false,
+      };
     }
     return {
       damageInstances: this.damageInstances,

@@ -47,7 +47,11 @@ export interface IGame {
   score: number;
 
   players: {
-    [name: string]: IDamageSummary
+    [name: string]: {
+      damage: IDamageSummary;
+      killed: boolean;
+      died: boolean;
+    }
   };
 
   damageInstances: Array<{
@@ -96,6 +100,20 @@ export interface IDamageSummary {
   averageRange: number;
 }
 
+export interface IPlayerData {
+  timesMet: number;
+  killed: number;
+  died: number;
+}
+
+export interface IPlayerDataRaw extends IPlayerData {
+  damage: DamageSummary;
+}
+
+export interface IPlayerDataCloneable extends IPlayerData {
+  damage: IDamageSummary;
+}
+
 export interface IParseLogResponseCloneable {
   meta: {
     lines: {
@@ -106,7 +124,7 @@ export interface IParseLogResponseCloneable {
   entries: Array<ILogEntry>;
   games: Array<IGame>;
   players: {
-    [name: string]: IDamageSummary
+    [name: string]: IPlayerDataCloneable
   };
   summary: {
     wins: number;
@@ -134,7 +152,7 @@ export interface IParseLogOutput {
   entries: Array<LogEntry>;
   games: Array<IGame>;
   players: {
-    [name: string]: DamageSummary
+    [name: string]: IPlayerDataRaw
   };
   summary: {
     wins: number;
