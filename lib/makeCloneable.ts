@@ -8,10 +8,10 @@ export default function makeCloneable(rawResponse: ICullingParser.IParseLogOutpu
     players: {},
     summary: {
       damage: rawResponse.summary.damage.getSummary(),
-      deaths: 0,
-      kills: 0,
-      losses: 0,
-      wins: 0,
+      deaths: rawResponse.summary.deaths,
+      kills: rawResponse.summary.kills,
+      losses: rawResponse.summary.losses,
+      wins: rawResponse.summary.wins,
     },
   };
   Object.keys(rawResponse.players).forEach((name) => {
