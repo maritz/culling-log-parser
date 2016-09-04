@@ -43,6 +43,8 @@ export default class LogEntry implements ICullingParser.ILogEntry {
       isBlocked: false,
       isHeadshot: false,
       isRanged: false,
+      isReceived: false,
+      isDealt: true,
       range: 0,
       received: 0,
       timestamp: 0,
@@ -197,9 +199,9 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     }
     const str = this.fullLine.substr(53);
     let values = str.match(/You hit (.*) for (-?[\d\.]+) damage \(([\d\.]+)\ m\)/i);
-    let isHit = true;
     if (!values) {
-      isHit = false;
+      this.damage.isDealt = false;
+      this.damage.isReceived = true;
       values = str.match(/Struck by (.*) for (-?[\d\.]+) damage \(([\d\.]+)\ m\)/i);
     }
     if (!values) {
@@ -216,7 +218,7 @@ export default class LogEntry implements ICullingParser.ILogEntry {
       this.damage.timestamp = this.date.getTime();
     }
     const damage = parseInt(values[2], 10);
-    if (isHit) {
+    if (this.damage.isDealt) {
       this.damage.dealt = damage;
     } else {
       this.damage.received = damage;

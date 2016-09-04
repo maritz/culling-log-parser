@@ -35,7 +35,7 @@ class DamageSubSummary implements ICullingParser.IDamageSummaryDamage {
     if (instance.isBackstab) {
       this.backstabCount++;
     }
-    if (instance.block > 0) {
+    if (instance.isBlocked) {
       if (!instance.isRanged) {
         this.meleeBlockCount++;
       } else {
@@ -109,7 +109,7 @@ export default class DamageSummary {
 
     let subSUmmary = obj.dealt;
     let damage = instance.dealt;
-    if (instance.received > 0) {
+    if (instance.isReceived) {
       subSUmmary = obj.received;
       damage = instance.received;
     }

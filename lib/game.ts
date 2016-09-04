@@ -52,7 +52,7 @@ export default class Game {
     }
 
     // check finish conditions
-    if (this.deathWaitingForDamage && entry.damage.received) {
+    if (this.deathWaitingForDamage && entry.damage.isReceived) {
       this.finish(entry);
     } else if (entry.isWin) {
       this.isWin = true;

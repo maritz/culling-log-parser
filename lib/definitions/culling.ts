@@ -73,6 +73,8 @@ export interface IDamageInstance {
   timestamp: number;
   isBackstab: boolean;
   isBlocked: boolean;
+  isDealt: boolean;
+  isReceived: boolean;
   block: number;
 }
 
