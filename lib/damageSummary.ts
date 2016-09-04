@@ -18,6 +18,7 @@ class DamageSubSummary implements ICullingParser.IDamageSummaryDamage {
     this.count = 0;
     this.rangeSum = 0;
     this.backstabCount = 0;
+    this.headshotCount = 0;
     this.meleeBlockCount = 0;
     this.rangeBlockCount = 0;
     this.rangeBlockAmount = 0;
@@ -34,6 +35,9 @@ class DamageSubSummary implements ICullingParser.IDamageSummaryDamage {
     }
     if (instance.isBackstab) {
       this.backstabCount++;
+    }
+    if (instance.isHeadshot) {
+      this.headshotCount++;
     }
     if (instance.isBlocked) {
       if (!instance.isRanged) {
@@ -55,6 +59,7 @@ class DamageSubSummary implements ICullingParser.IDamageSummaryDamage {
       result.averageRange = 0;
     }
     result.backstabCount = this.backstabCount + other.backstabCount;
+    result.headshotCount = this.headshotCount + other.headshotCount;
     result.meleeBlockCount = this.meleeBlockCount + other.meleeBlockCount;
     result.rangeBlockAmount = this.rangeBlockAmount + other.rangeBlockAmount;
     result.rangeBlockCount = this.rangeBlockCount + other.rangeBlockCount;
