@@ -64,11 +64,19 @@ export default function parseLog(
     } else {
       output.meta.lines.relevant++;
     }
+    if (entry.isGameStart) {
+      currentGame = new Game();
+    }
 
     if (entry.version.api !== 0) {
       version = entry.version.api;
       if (! verifiedApiVersions.indexOf(entry.version.api)) {
         console.warn('culling-log-parser: WARNING! This log is from a game version that has not been tested!', entry.version.api);
+      }
+      if (entry.version.api !== 0 && entry.version.api < 92253) {
+        console.log(`culling-log-parser: Parsing log with old version that doesn't have reliable kills, deaths, wins or losses.`);
+      } else if (entry.version.api !== 0) {
+        console.log('Version', entry.version.api);
       }
       return;
     }
@@ -80,8 +88,17 @@ export default function parseLog(
       console.warn('culling-log-parser: WARNING! This log does not appear to have a recognized version line.');
     }
 
+
     if (entry.region) {
       currentRegion = entry.region;
+    }
+
+    currentGame.addEntry(entry);
+    if (!entry.isGameEnd && !currentGame.type || currentGame.type === 'unknown' || currentGame.type === 'bot') {
+      if (currentGame.type !== 'bot' && !entry.isGameStart && !entry.isGameEnd && !entry.region) {
+        console.log('Unknown game type, ignoring possibly interesting entry', currentGame.type, entry);
+      }
+      return;
     }
 
     if (entry.isKill) {
@@ -108,7 +125,6 @@ export default function parseLog(
     }
 
     output.summary.damage.add(entry.damage);
-    currentGame.addEntry(entry);
     if (currentGame.isFinished) {
       const finishedGame = currentGame.getResult();
       Object.keys(finishedGame.players).forEach((name) => {

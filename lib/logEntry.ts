@@ -23,7 +23,6 @@ export default class LogEntry implements ICullingParser.ILogEntry {
   public damage: ICullingParser.IDamageInstance;
   public isKill: boolean;
   public isDeath: boolean;
-  public isAFK: boolean;
   public version: {
     game: string;
     api: number;
@@ -65,7 +64,7 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     };
 
     this.gameType = {
-      game: 'custom',
+      game: '',
       level: '',
     };
 
@@ -80,6 +79,7 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     this.parseRegion();
     this.parseGameState();
     this.parseGameType();
+    this.parseIsBotGame()
     this.parseDamage(options.ignoreBots);
     this.parseRankScoring();
   }
@@ -121,7 +121,10 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     if (this.moduleName !== 'LogInit') {
       return;
     }
-    const str = this.fullLine.substr(9);
+    let str = this.fullLine.substr(9);
+    if (this.date) {
+      str = this.fullLine.substr(39);
+    }
     if (str.indexOf('Version:') === 0) {
       // LogInit: Version: 4.11.2-93315+++RedHarvest+Staging
       this.version.game = str.substr(18);
@@ -158,10 +161,12 @@ export default class LogEntry implements ICullingParser.ILogEntry {
     const str = this.fullLine.substr(41);
     if (str.indexOf('GotoState: NewState: Playing') !== -1) {
       // [2016.08.19-18.46.20:992][464]LogOnline: GotoState: NewState: Playing
+      this.interesting = true;
       this.isGameStart = true;
     } else if (str.indexOf('GotoState: NewState: MainMenu') !== -1) {
       // [2016.08.19-18.51.49:605][325]LogOnline: GotoState: NewState: MainMenu
       this.isGameEnd = true;
+      this.interesting = true;
     }
   }
 
@@ -190,6 +195,18 @@ export default class LogEntry implements ICullingParser.ILogEntry {
       game: mode,
       level: matches[1],
     };
+  }
+
+  private parseIsBotGame() {
+    //[2016.04.12-10.27.36:654][433]LogLoad: LoadMap: /Game/Maps/Tutorial/Tutorial_v2_Advanced?game=/Game/Blueprints/GameMode/VictoryTutorial.VictoryTutorial_C?bExitOnRoundComplete=true
+    if (this.moduleName !== 'LogLoad') {
+      return;
+    }
+    const str = this.fullLine.substr(38);
+    if (str.match(/LoadMap: (?:[\d\.]+)?\/?\/Game\/Maps\/(?:Tutorial|Jungle\/Jungle_P\?bEnableBots)/i)) {
+      this.gameType.game = 'bot';
+      this.interesting = true;
+    }
   }
 
   private parseDamage(ignoreBots = false) {

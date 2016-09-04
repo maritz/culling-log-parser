@@ -16,6 +16,7 @@ export default class Game {
 
   public damageSummary: DamageSummary;
 
+  public isBotGame: boolean;
   public isWin: boolean;
   public score: number;
   public isFinished: boolean;
@@ -34,8 +35,9 @@ export default class Game {
     this.isWin = false;
     this.isFinished = false;
     this.deathWaitingForDamage = false;
-    this.type = 'custom';
+    this.type = '';
     this.region = region;
+    this.isBotGame = true;
   }
 
   public addEntry(entry: LogEntry) {
@@ -44,7 +46,7 @@ export default class Game {
     }
     this.addDamage(entry);
 
-    if (entry.gameType.game !== 'custom') {
+    if (entry.gameType.game !== '') {
       this.type = entry.gameType.game;
     }
     if (entry.region) {
@@ -56,15 +58,14 @@ export default class Game {
       this.finish(entry);
     } else if (entry.isWin) {
       this.isWin = true;
-      this.finish(entry);
     } else if (entry.isDeath) {
       // when hit by direct damage from a player as the killing blow the damage instance
-      // is logged after the death and loss message
+      // is usually logged after the death and loss message
       this.deathWaitingForDamage = true;
-    } else if (entry.isGameEnd) {
+    } else if (this.start && entry.isGameEnd) {
       // When hit by indirect damage (gas and possibly others) as the killing blow
       // there is no last damage instance after death and loss. Thus we wait for the
-      // main menu entry.
+      // main menu entry, marked as isGameEnd.
       // The reason we can't just always wait for isGameEnd is that crashlogs would not have
       // an end entry and so could introduce problems.
       // Also this way of doing it allows for a better estimate on actual gameplay time.
