@@ -39,9 +39,13 @@ export interface ILogEntry {
 }
 
 export interface IGame {
-  start: Date | null;
-  end: Date | null;
+  id: number;
 
+  start: Date;
+  end: Date;
+
+  kills: number;
+  isLoss: boolean;
   isWin: boolean;
   score: number;
 
@@ -103,8 +107,6 @@ export interface IDamageSummary {
 
 export interface IPlayerData {
   timesMet: number;
-  killed: number;
-  died: number;
 }
 
 export interface IPlayerDataRaw extends IPlayerData {
@@ -121,6 +123,9 @@ export interface IParseLogResponseCloneable {
       total: number;
       relevant: number;
     }
+    version: number
+    errors: Array<string|Error>;
+    warnings: Array<string>;
   };
   entries: Array<ILogEntry>;
   games: Array<IGame>;
@@ -148,7 +153,10 @@ export interface IParseLogOutput {
     lines: {
       total: number;
       relevant: number;
-    }
+    },
+    version: number
+    errors: Array<string|Error>;
+    warnings: Array<string>;
   };
   entries: Array<LogEntry>;
   games: Array<IGame>;

@@ -254,7 +254,7 @@ export default class LogEntry implements ICullingParser.ILogEntry {
       this.damage.isBlocked = true;
       this.damage.block = parseInt(blockMatch[1], 10);
       if (this.damage.block === 50) {
-        this.damage.isRanged = true;
+        this.damage.isRanged = true; // explosions as well? TODO: test this
       } else if (this.damage.block !== 100 && this.damage.block !== 25) { // 25% is blocking with chainsaw equipped
         console.info('culling-log-parser: Found abnormal block value!', blockMatch[1], this.fullLine);
       }

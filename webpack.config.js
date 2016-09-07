@@ -1,10 +1,12 @@
 const path = require('path');
 const webpack = require('webpack');
 
+const production = process.env.NODE_ENV === 'production';
+
 module.exports = {
   entry: './index.ts',
   progress: true,
-  devtool: 'source-map',
+  devtool: production ? 'source-map' : 'eval',
   target: 'web',
   bail: true,
 

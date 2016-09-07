@@ -2,7 +2,10 @@ import DamageSummary from './damageSummary';
 import LogEntry from './logEntry';
 import * as ICullingParser from './definitions/culling';
 
+let idCounter = Date.now();
+
 export default class Game {
+  public id: number;
 
   public start: Date | null;
   public end: Date | null;
@@ -17,7 +20,10 @@ export default class Game {
   public damageSummary: DamageSummary;
 
   public isBotGame: boolean;
+
+  public kills: number;
   public isWin: boolean;
+  public isLoss: boolean;
   public score: number;
   public isFinished: boolean;
 
@@ -27,12 +33,15 @@ export default class Game {
   private deathWaitingForDamage: boolean;
 
   constructor(region: ICullingParser.RegionsType = '') {
+    this.id = ++idCounter;
     this.start = null;
     this.end = null;
     this.players = {};
     this.damageSummary = new DamageSummary();
     this.damageInstances = [];
+    this.kills = 0;
     this.isWin = false;
+    this.isLoss = false;
     this.isFinished = false;
     this.deathWaitingForDamage = false;
     this.type = '';
@@ -52,15 +61,19 @@ export default class Game {
     if (entry.region) {
       this.region = entry.region;
     }
+    if (entry.isKill) {
+      this.kills++;
+    }
 
     // check finish conditions
     if (this.deathWaitingForDamage && entry.damage.isReceived) {
       this.finish(entry);
     } else if (entry.isWin) {
       this.isWin = true;
-    } else if (entry.isDeath) {
+    } else if (entry.isDeath || entry.isLoss) {
       // when hit by direct damage from a player as the killing blow the damage instance
       // is usually logged after the death and loss message
+      this.isLoss = true;
       this.deathWaitingForDamage = true;
     } else if (this.start && entry.isGameEnd) {
       // When hit by indirect damage (gas and possibly others) as the killing blow
@@ -124,13 +137,16 @@ export default class Game {
     return {
       damageInstances: this.damageInstances,
       damageSummary: this.damageSummary.getSummary(),
-      end: this.end,
+      end: this.end || new Date(0),
+      id: this.id,
+      isLoss: this.isLoss,
       isWin: this.isWin,
+      kills: this.kills,
       mode: this.type,
       players: playerObject,
       region: this.region,
       score: this.score,
-      start: this.start,
+      start: this.start || new Date(0),
     };
   }
 

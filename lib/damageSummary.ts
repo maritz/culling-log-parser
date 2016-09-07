@@ -63,6 +63,7 @@ class DamageSubSummary implements ICullingParser.IDamageSummaryDamage {
     result.meleeBlockCount = this.meleeBlockCount + other.meleeBlockCount;
     result.rangeBlockAmount = this.rangeBlockAmount + other.rangeBlockAmount;
     result.rangeBlockCount = this.rangeBlockCount + other.rangeBlockCount;
+    result.rangeSum = this.rangeSum + other.rangeSum;
     return result;
   }
 }

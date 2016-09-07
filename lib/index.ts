@@ -3,7 +3,9 @@ import LogEntry from './logEntry';
 import Game from './game';
 import * as ICullingParser from './definitions/culling';
 
-const verifiedApiVersions: Array<number> = [];
+const verifiedApiVersions: Array<number> = [
+  92253, 92358, 92449, 92896, 93315, 93811,
+];
 
 
 export default function parseLog(
@@ -19,10 +21,13 @@ export default function parseLog(
     entries: [],
     games: [],
     meta: {
+      errors: [],
       lines: {
         relevant: 0,
         total: 0,
       },
+      version: 0,
+      warnings: [],
     },
     players: {},
     start: new Date(),
@@ -37,8 +42,6 @@ export default function parseLog(
   let startSet = false;
   let currentGame: Game = new Game();
   let currentRegion: ICullingParser.RegionsType = '';
-
-  let version = 0;
 
   const lines = input.split('\n');
   lines.forEach((line, lineno) => {
@@ -69,14 +72,19 @@ export default function parseLog(
     }
 
     if (entry.version.api !== 0) {
-      version = entry.version.api;
-      if (! verifiedApiVersions.indexOf(entry.version.api)) {
-        console.warn('culling-log-parser: WARNING! This log is from a game version that has not been tested!', entry.version.api);
+      output.meta.version = entry.version.api;
+
+      if (entry.version.api < 92253) {
+        const warn = `Parsed old log file that is known to not have kills or deaths.`;
+        if (output.meta.warnings.indexOf(warn) === -1) {
+          output.meta.warnings.push(warn);
+        }
       }
-      if (entry.version.api !== 0 && entry.version.api < 92253) {
-        console.log(`culling-log-parser: Parsing log with old version that doesn't have reliable kills, deaths, wins or losses.`);
-      } else if (entry.version.api !== 0) {
-        console.log('Version', entry.version.api);
+      if (!verifiedApiVersions.indexOf(entry.version.api)) {
+        const warn = `Parsed log file that is not from an API Version that is verified: ${entry.version.api}`;
+        if (output.meta.warnings.indexOf(warn) === -1) {
+          output.meta.warnings.push(warn);
+        }
       }
       return;
     }
@@ -84,8 +92,11 @@ export default function parseLog(
       // rely on api for now.
       return;
     }
-    if (version === 0 && entry.isGameStart) {
-      console.warn('culling-log-parser: WARNING! This log does not appear to have a recognized version line.');
+    if (output.meta.version === 0 && entry.isGameStart) {
+      const warn = `Parsed log file does not appear to have a recognized version line.`;
+      if (output.meta.warnings.indexOf(warn) === -1) {
+        output.meta.warnings.push(warn);
+      }
     }
 
 
@@ -96,7 +107,8 @@ export default function parseLog(
     currentGame.addEntry(entry);
     if (!entry.isGameEnd && !currentGame.type || currentGame.type === 'unknown' || currentGame.type === 'bot') {
       if (currentGame.type !== 'bot' && !entry.isGameStart && !entry.isGameEnd && !entry.region) {
-        console.log('Unknown game type, ignoring possibly interesting entry', currentGame.type, entry);
+        output.meta.warnings.push(`Unknown game type, ignoring possibly interesting entry. Gametype: ${
+          currentGame.type}, Entry: ${JSON.stringify(entry)}.`);
       }
       return;
     }
@@ -116,12 +128,14 @@ export default function parseLog(
 
     if (entry.damage.isBlocked && entry.damage.isBackstab) {
       // BrokeBack
-      console.warn('culling-log-parser: WARNING! Someone blocked a backstab?!?!?!?!');
+      output.meta.warnings.push(`Someone blocked a backstab?!?!?!?!`);
     }
 
     if (entry.damage.isBlocked && entry.damage.isAFK) {
       // PogChamp
-      console.info('culling-log-parser: Someone blocked a damage instance from stupid range. Rare but can happen.');
+      console.info('culling-log-parser: ');
+      output.meta.warnings.push(`Someone blocked a damage instance from stupid range.
+      Rare but can happen, just wanted to let you know.`);
     }
 
     output.summary.damage.add(entry.damage);
@@ -131,8 +145,6 @@ export default function parseLog(
         if (!output.players[name]) {
           output.players[name] = {
             damage: new DamageSummary(),
-            died: 0,
-            killed: 0,
             timesMet: 0,
           };
         }
@@ -150,6 +162,15 @@ export default function parseLog(
     // last game didn't finish according to logs. crashed?
     currentGame.finish(output.entries[output.entries.length - 1]);
     output.games.push(currentGame.getResult());
+  }
+
+  if (verifiedApiVersions.indexOf(output.meta.version) !== -1 &&
+    output.summary.damage.getSummary().dealt.amount > 100 && output.summary.kills === 0) {
+    console.log('No kills found in version', output.meta.version, output.summary.damage.getSummary().dealt.amount, output.summary.wins, output.summary.losses, output.summary.deaths, output.start);
+  }
+
+  if (output.meta.version < 92253 && output.summary.kills > 0) {
+    console.log('Old version that *does* have kills', output.meta.version);
   }
 
   return output;
